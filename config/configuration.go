@@ -6,8 +6,14 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/llmcontext/gomcp/jsonschema"
+	"github.com/llmcontext/gomcp/pkg/jsonschema"
 )
+
+type LoggingInfo struct {
+	File       string `json:"file,omitempty"`
+	Level      string `json:"level,omitempty"`
+	WithStderr bool   `json:"withStderr,omitempty"`
+}
 
 type McpHostConfiguration struct {
 	ConfigVersion int          `json:"v"`
@@ -45,15 +51,25 @@ func LoadMcpHostConfiguration() (*McpHostConfiguration, error) {
 		return nil, err
 	}
 
-	var config HubConfiguration
+	var config McpHostConfiguration
 	err = json.Unmarshal(jsonBytes, &config)
 	if err != nil {
 		return nil, err
 	}
 
 	// update the file path to be absolute
-	if config.Logging != nil {
-		config.Logging.UpdateFilePaths()
+	if config.Logging != nil && config.Logging.File != "" {
+		config.Logging.File = updateFilePath(config.Logging.File)
 	}
 	return &config, nil
+}
+
+func updateFilePath(path string) string {
+	if path == "" {
+		return path
+	}
+	if !filepath.IsAbs(path) {
+		path = filepath.Join(DefaultConfigurationDirectory, path)
+	}
+	return path
 }

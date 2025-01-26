@@ -23,17 +23,18 @@ var (
 			}
 
 			// we create the MCP server
-			mcpServer, err := gomcp.NewMcpServer(config.ServerName, config.ServerVersion)
+			mcpServerDefinition := gomcp.NewMcpServerDefinition(config.ServerName, config.ServerVersion)
+			mcpServerDefinition.SetDebugLevel(conf.Logging.Level, conf.Logging.File)
+
+			mcp, err := gomcp.NewModelContextProtocolServer(mcpServerDefinition)
 			if err != nil {
 				fmt.Println("Error creating MCP server:", err)
 				os.Exit(1)
 			}
-			mcpServer.SetDebugLevel("debug", "mcphost.log")
 
 			// start the server
-			// start the server
-			transport := mcpServer.StdioTransport()
-			err = mcpServer.Start(transport)
+			transport := mcp.StdioTransport()
+			err = mcp.Start(transport)
 			if err != nil {
 				fmt.Println("Error starting MCP server:", err)
 				os.Exit(1)
