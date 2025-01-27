@@ -28,6 +28,14 @@ func (s *ShareTools) Register(mcpServerDefinition types.McpSdkServerDefinition) 
 	return nil
 }
 
+func (s *ShareTools) ListShares() ([]ShareDescription, error) {
+	shares, err := loadShares(s.baseDirectory)
+	if err != nil {
+		return nil, err
+	}
+	return shares.Shares, nil
+}
+
 func (s *ShareTools) AddShare(name string, path string) error {
 	shares, err := loadShares(s.baseDirectory)
 	if err != nil {
@@ -41,7 +49,7 @@ func (s *ShareTools) AddShare(name string, path string) error {
 		}
 
 		if share.Path == path {
-			return fmt.Errorf("sharewith same path already exists: %s", share.ShareName)
+			return fmt.Errorf("share with same path already exists: %s", share.ShareName)
 		}
 	}
 
