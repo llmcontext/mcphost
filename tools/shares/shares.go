@@ -23,7 +23,12 @@ func (s *ShareTools) Register(mcpServerDefinition types.McpSdkServerDefinition) 
 
 	mcpToolsDefinition := mcpServerDefinition.WithTools(config, ShareToolInit)
 
-	mcpToolsDefinition.AddTool("listShares", "List all share names", ListShares)
+	mcpToolsDefinition.AddTool("listShares", "List all share names. A share is the name of a directory that is shared with the client", ListShares)
+	mcpToolsDefinition.AddTool("getShareFiles",
+		`Get a detailed listing of all files and directories in a specified share name
+Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes
+This tool is essential for understanding directory structure and  finding specific files within a directory.`,
+		GetShareFiles)
 
 	return nil
 }
@@ -64,4 +69,31 @@ func (s *ShareTools) AddShare(name string, path string) error {
 	}
 
 	return nil
+}
+
+func (s *ShareTools) DeleteShareForDirectory(path string) (*ShareDescription, error) {
+	shares, err := loadShares(s.baseDirectory)
+	if err != nil {
+		return nil, err
+	}
+
+	var theShare *ShareDescription
+	for i, share := range shares.Shares {
+		if share.Path == path {
+			shares.Shares = append(shares.Shares[:i], shares.Shares[i+1:]...)
+			theShare = &share
+			break
+		}
+	}
+
+	err = saveShares(s.baseDirectory, shares)
+	if err != nil {
+		return nil, err
+	}
+
+	if theShare == nil {
+		return nil, fmt.Errorf("share not found for path: %s", path)
+	}
+
+	return theShare, nil
 }
