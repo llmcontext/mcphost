@@ -70,6 +70,15 @@ func loadShares(baseDirectory string) (*ShareToolContext, error) {
 	return &config, nil
 }
 
+func findShareByName(config *ShareToolContext, shareName string) *ShareDescription {
+	for _, share := range config.Shares {
+		if share.ShareName == shareName {
+			return &share
+		}
+	}
+	return nil
+}
+
 func ShareToolInit(ctx context.Context, config *ShareToolConfiguration) (*ShareToolContext, error) {
 	return loadShares(config.BaseDirectory)
 }
@@ -96,20 +105,16 @@ type GetShareFilesInput struct {
 
 func GetShareFiles(ctx context.Context, config *ShareToolContext, input *GetShareFilesInput, output types.ToolCallResult) error {
 	files := []string{}
-	found := false
-	for _, share := range config.Shares {
-		if share.ShareName == input.ShareName {
-			found = true
-			shareFiles, err := listFilesRecursively(share.Path)
-			if err != nil {
-				return err
-			}
-			files = append(files, shareFiles...)
-		}
-	}
-	if !found {
+	share := findShareByName(config, input.ShareName)
+	if share == nil {
 		return fmt.Errorf("share %s not found", input.ShareName)
 	}
+	shareFiles, err := listFilesRecursively(share.Path)
+	if err != nil {
+		return err
+	}
+	files = append(files, shareFiles...)
+
 	output.AddJSONTextContent(files)
 	return nil
 }
@@ -149,4 +154,28 @@ func listFilesRecursively(root string) ([]string, error) {
 	}
 
 	return files, nil
+}
+
+type ReadFileInput struct {
+	ShareName string
+	FilePath  string
+}
+
+func ReadFile(ctx context.Context, config *ShareToolContext, input *ReadFileInput, output types.ToolCallResult) error {
+	share := findShareByName(config, input.ShareName)
+	if share == nil {
+		return fmt.Errorf("share %s not found", input.ShareName)
+	}
+
+	filePath := filepath.Join(share.Path, input.FilePath)
+	// check if the file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return fmt.Errorf("file %s not found", filePath)
+	}
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to read file %s: %v", filePath, err)
+	}
+	output.AddTextContent(string(content))
+	return nil
 }

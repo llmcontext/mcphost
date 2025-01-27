@@ -29,6 +29,11 @@ func (s *ShareTools) Register(mcpServerDefinition types.McpSdkServerDefinition) 
 Results clearly distinguish between files and directories with [FILE] and [DIR] prefixes
 This tool is essential for understanding directory structure and  finding specific files within a directory.`,
 		GetShareFiles)
+	mcpToolsDefinition.AddTool("readFile",
+		`Read the complete contents of a file from the share.
+Handles various text encodings and provides detailed error messages if the file cannot be read.
+Use this tool when you need to examine the contents of a single file.`,
+		ReadFile)
 
 	return nil
 }
