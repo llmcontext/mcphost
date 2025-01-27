@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/llmcontext/mcphost/config"
+	"github.com/llmcontext/mcphost/tools/shares"
 	"github.com/spf13/cobra"
 )
 
@@ -47,6 +49,14 @@ var shareCmd = &cobra.Command{
 		}
 		fmt.Println("name:", name)
 		fmt.Println("path:", path)
+
+		shareTools := shares.NewShareTools(config.DefaultConfigurationDirectory)
+
+		err = shareTools.AddShare(name, path)
+		if err != nil {
+			fmt.Println("error adding share:", err)
+			os.Exit(1)
+		}
 	},
 }
 

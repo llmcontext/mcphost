@@ -28,8 +28,8 @@ var (
 			mcpServerDefinition.SetDebugLevel(conf.Logging.Level, conf.Logging.File)
 
 			// we register the tools
-			sharesTools := shares.NewShareTools(config.DefaultConfigurationDirectory)
-			if err := sharesTools.Register(mcpServerDefinition); err != nil {
+			shareTools := shares.NewShareTools(config.DefaultConfigurationDirectory)
+			if err := shareTools.Register(mcpServerDefinition); err != nil {
 				fmt.Println("Error registering shares tools:", err)
 				os.Exit(1)
 			}

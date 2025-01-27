@@ -24,6 +24,15 @@ type ShareToolContext struct {
 	Shares []ShareDescription `json:"shares"`
 }
 
+func saveShares(baseDirectory string, shares *ShareToolContext) error {
+	filePath := filepath.Join(baseDirectory, "shares.json")
+	jsonBytes, err := json.MarshalIndent(shares, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal shares: %v", err)
+	}
+	return os.WriteFile(filePath, jsonBytes, 0644)
+}
+
 func loadShares(baseDirectory string) (*ShareToolContext, error) {
 	filePath := filepath.Join(baseDirectory, "shares.json")
 
