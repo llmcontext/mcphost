@@ -6,6 +6,7 @@ import (
 
 	"github.com/llmcontext/gomcp"
 	"github.com/llmcontext/mcphost/config"
+	"github.com/llmcontext/mcphost/tools/shares"
 	"github.com/spf13/cobra"
 )
 
@@ -25,6 +26,13 @@ var (
 			// we create the MCP server
 			mcpServerDefinition := gomcp.NewMcpServerDefinition(config.ServerName, config.ServerVersion)
 			mcpServerDefinition.SetDebugLevel(conf.Logging.Level, conf.Logging.File)
+
+			// we register the tools
+			sharesTools := shares.NewShareTools(config.DefaultConfigurationDirectory)
+			if err := sharesTools.Register(mcpServerDefinition); err != nil {
+				fmt.Println("Error registering shares tools:", err)
+				os.Exit(1)
+			}
 
 			mcp, err := gomcp.NewModelContextProtocolServer(mcpServerDefinition)
 			if err != nil {
