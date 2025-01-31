@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/llmcontext/mcphost/config"
 	"github.com/llmcontext/mcphost/tools/shares"
@@ -32,11 +31,4 @@ var shareCmd = &cobra.Command{
 			fmt.Printf("%s: %s\n", share.ShareName, share.Path)
 		}
 	},
-}
-
-func convertRelativePathToAbsolute(path string) (string, error) {
-	if filepath.IsAbs(path) {
-		return path, nil
-	}
-	return filepath.Abs(path)
 }
