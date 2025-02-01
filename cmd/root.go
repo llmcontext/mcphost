@@ -6,6 +6,7 @@ import (
 
 	"github.com/llmcontext/gomcp"
 	"github.com/llmcontext/mcphost/config"
+	"github.com/llmcontext/mcphost/tools/prompts"
 	"github.com/llmcontext/mcphost/tools/shares"
 	"github.com/spf13/cobra"
 )
@@ -31,6 +32,13 @@ var (
 			shareTools := shares.NewShareTools(config.DefaultConfigurationDirectory)
 			if err := shareTools.Register(mcpServerDefinition); err != nil {
 				fmt.Println("Error registering shares tools:", err)
+				os.Exit(1)
+			}
+
+			// we register the prompts
+			promptsTools := prompts.NewPromptsTools(config.DefaultConfigurationDirectory)
+			if err := promptsTools.Register(mcpServerDefinition); err != nil {
+				fmt.Println("Error registering prompts tools:", err)
 				os.Exit(1)
 			}
 

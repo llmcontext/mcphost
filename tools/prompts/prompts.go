@@ -2,8 +2,10 @@ package prompts
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/llmcontext/gomcp/pkg/prompts"
+	"github.com/llmcontext/gomcp/types"
 )
 
 type PromptsTools struct {
@@ -29,6 +31,25 @@ func NewPromptsTools(baseDirectory string) *PromptsTools {
 	return &PromptsTools{
 		baseDirectory: baseDirectory,
 	}
+}
+
+func (p *PromptsTools) Register(mcpServerDefinition types.McpSdkServerDefinition) error {
+	promptsList, err := p.ListPrompts()
+	if err != nil {
+		return err
+	}
+	for _, prompt := range promptsList {
+		duplicatedPrompts, err := mcpServerDefinition.AddTemplateYamlFile(prompt.YamlPath)
+		if err != nil {
+			return err
+		}
+		for _, duplicatedPrompt := range duplicatedPrompts {
+			// write on stderr
+			fmt.Fprintf(os.Stderr, "duplicated prompt: %s, in file: %s\n",
+				duplicatedPrompt.PromptName, duplicatedPrompt.FilePath)
+		}
+	}
+	return nil
 }
 
 func (p *PromptsTools) ListPrompts() ([]PromptFile, error) {
@@ -89,6 +110,7 @@ func (p *PromptsTools) AddPrompts(yamlFiles []string) []string {
 			out = append(out, fmt.Sprintf("error loading prompt yaml file: %s", err))
 			continue
 		}
+
 		out = append(out, fmt.Sprintf("prompt yaml file added: %s", yamlFile))
 		promptsFiles.Prompts = append(promptsFiles.Prompts, PromptDescription{
 			PromptYamlPath: yamlFile,
